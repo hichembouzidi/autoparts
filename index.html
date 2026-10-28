@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoParts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { light: '#2563eb', dark: '#60a5fa' },
+                        accent: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
+        body { font-family: 'Inter', 'Noto Sans Arabic', sans-serif; transition: background-color 0.3s; }
+        .nav-link.active { @apply bg-blue-600 text-white shadow-md; }
+        .hidden-page { display: none; }
+        .rtl { direction: rtl; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+
+        #sideMenu { transition: all 0.3s ease; }
+        .menu-hidden { width: 0 !important; opacity: 0; pointer-events: none; margin: 0 !important; padding: 0 !important; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button id="menuToggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors mr-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fa-solid fa-gears text-white text-xl"></i>
+                </div>
+                <div class="flex flex-col leading-tight">
+                    <h1 class="text-xl font-bold tracking-tight">AutoParts</h1>
+                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">Designed by Bouzidi Hichem</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <select id="langSwitcher" class="bg-slate-100 dark:bg-slate-700 border-none rounded-lg p-1 text-xs outline-none cursor-pointer">
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="fr">🇫🇷 FR</option>
+                    <option value="ar">🇩🇿 AR</option>
+                </select>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <i id="themeIcon" class="fa-solid fa-moon text-slate-600 dark:text-slate-300"></i>
+                </button>
+                <div class="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+                <span id="currentDate" class="hidden sm:block text-xs font-medium text-slate-500 dark:text-slate-400"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform transition-all">
+            <div id="modalIconContainer" class="p-6 text-center bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                <i id="modalIcon" class="fa-solid fa-triangle-exclamation text-4xl text-amber-500"></i>
+            </div>
+            <div class="p-6 text-center">
+                <h3 id="modalTitle" class="text-xl font-bold mb-2">Confirm Action</h3>
+                <p id="modalMessage" class="text-slate-500 dark:text-slate-400 mb-6"></p>
+                <div class="flex gap-3">
+                    <button id="modalCancel" class="flex-1 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">Cancel</button>
+                    <button id="modalConfirm" class="flex-1 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-all">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="flex gap-8 relative">
+
+            <!-- Side Menu -->
+            <aside id="sideMenu" class="w-full md:w-64 space-y-2 shrink-0">
+                <button onclick="showPage('dashboard')" class="nav-link active w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-left" data-page="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_dashboard">Dashboard</span>
+                </button>
+                <button onclick="showPage('inventory')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-left" data-page="inventory">
+                    <i class="fa-solid fa-boxes-stacked"></i> <span data-i18n="nav_inventory">Inventory</span>
+                </button>
+                <button onclick="showPage('sales')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-left" data-page="sales">
+                    <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="nav_sales">Sales & Losses</span>
+                </button>
+                <div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                    <button onclick="resetEntireSystem()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-bold text-left">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="nav_reset">System Reset</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <div id="notification" class="hidden fixed top-20 right-4 z-50 bg-white dark:bg-slate-800 border-l-4 border-blue-500 p-4 rounded-lg shadow-2xl transition-all animate-bounce"></div>
+
+                <!-- PAGE: DASHBOARD -->
+                <div id="page-dashboard" class="page-content space-y-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 max-w-4xl mx-auto">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+                            <div class="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-xl shrink-0"><i class="fa-solid fa-warehouse text-blue-600 text-2xl"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_inv_val">Inventory Value</p>
+                                <p id="totalValue" class="text-2xl font-bold break-all"></p>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+                            <div class="bg-green-100 dark:bg-green-900/30 p-4 rounded-xl shrink-0"><i class="fa-solid fa-chart-line text-green-600 text-2xl"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_pot_profit">Potential Profit</p>
+                                <p id="totalProfit" class="text-2xl font-bold break-all"></p>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+                            <div class="bg-amber-100 dark:bg-amber-900/30 p-4 rounded-xl shrink-0"><i class="fa-solid fa-money-bill-trend-up text-amber-600 text-2xl"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_real_profit">Realized Profit</p>
+                                <p id="realizedProfit" class="text-2xl font-bold break-all"></p>
+                            </div>
+                        </div>
+                        <div class="bg-indigo-600 p-6 rounded-2xl shadow-lg text-white flex items-center gap-4">
+                            <div class="bg-white/20 p-4 rounded-xl shrink-0"><i class="fa-solid fa-wallet text-white text-2xl"></i></div>
+                            <div class="flex-1">
+                                <p class="text-sm text-indigo-100 font-medium" data-i18n="stat_net_balance">Net Balance</p>
+                                <p id="netBalance" class="text-2xl font-bold break-all"></p>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- PAGE: INVENTORY -->
+                <div id="page-inventory" class="page-content hidden-page space-y-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-4 space-y-6">
+                            <!-- Category Management -->
+                            <section class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-folder-plus text-blue-500"></i> <span data-i18n="title_cat">Categories</span></h2>
+                                <form id="categoryForm" class="flex flex-col gap-3">
+                                    <input type="text" id="categoryName" placeholder="New category name..." class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors" data-i18n="btn_add">Add Category</button>
+                                </form>
+                                <div id="categoryList" class="mt-4 space-y-2 max-h-40 overflow-y-auto custom-scrollbar"></div>
+                            </section>
+                            <!-- Item Management -->
+                            <section class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-box-open text-green-500"></i> <span data-i18n="title_item">Add Part</span></h2>
+                                <form id="itemForm" class="space-y-4">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_name">Part Name</label>
+                                        <input type="text" id="itemName" placeholder="e.g. Brake Pad" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_cat">Category</label>
+                                        <select id="itemCategory" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required></select>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="space-y-1">
+                                            <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_qty">Quantity</label>
+                                            <input type="number" id="itemQty" placeholder="0" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required min="1">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_buy">Buy Price</label>
+                                            <input type="number" step="0.01" id="itemBuyPrice" placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required min="0">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_sell">Sell Price</label>
+                                        <input type="number" step="0.01" id="itemSellPrice" placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500" required min="0">
+                                    </div>
+                                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-plus"></i> <span data-i18n="btn_save_part">Save Part</span>
+                                    </button>
+                                </form>
+                            </section>
+                        </div>
+                        <div class="lg:col-span-8 space-y-4">
+                            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <div class="relative w-full sm:w-72">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                    <input type="text" id="searchInput" placeholder="Search..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto">
+                                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase" data-i18n="filter">Filter:</span>
+                                    <select id="filterCategory" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                        <option value="all" data-i18n="all_cats">All Categories</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold">
+                                            <tr class="whitespace-nowrap">
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_name">Part</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_cat">Cat</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_qty">Qty</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_price">Price</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_profit">Profit</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700 text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inventoryBody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                                    </table>
+                                    <div id="emptyState" class="hidden p-12 text-center text-slate-500">No parts found.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE: SALES & LOSSES -->
+                <div id="page-sales" class="page-content hidden-page space-y-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span data-i18n="title_loss">Record Loss</span></h2>
+                            <form id="lossForm" class="space-y-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_amount">Amount</label>
+                                    <input type="number" step="0.01" id="lossAmount" placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-500" required min="0">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase ml-1" data-i18n="lbl_desc">Description</label>
+                                    <input type="text" id="lossDesc" placeholder="Reason..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-500">
+                                </div>
+                                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-minus-circle"></i> <span data-i18n="btn_log_loss">Log Expense</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="lg:col-span-2 space-y-8">
+                            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+                                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-green-500"></i> <span data-i18n="title_sales">Sales History</span></h2>
+                                </div>
+                                <div class="overflow-x-auto max-h-64 overflow-y-auto custom-scrollbar">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold">
+                                            <tr class="whitespace-nowrap">
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_date">Date</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_item">Item</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_qty">Qty</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700 text-right" data-i18n="th_profit">Profit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesBody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                                    </table>
+                                    <div id="emptySalesState" class="hidden p-12 text-center text-slate-500">No sales yet.</div>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-red-500"></i> <span data-i18n="title_loss_hist">Loss History</span></h2>
+                                    <button onclick="clearLosses()" class="text-xs text-red-500 hover:underline" data-i18n="btn_clear_loss">Clear All</button>
+                                </div>
+                                <div class="overflow-x-auto max-h-64 overflow-y-auto custom-scrollbar">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold">
+                                            <tr class="whitespace-nowrap">
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_date">Date</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700" data-i18n="th_desc">Description</th>
+                                                <th class="px-6 py-4 border-b dark:border-slate-700 text-right" data-i18n="th_amount">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="lossHistoryBody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                                    </table>
+                                    <div id="emptyLossState" class="hidden p-12 text-center text-slate-500">No losses recorded.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
